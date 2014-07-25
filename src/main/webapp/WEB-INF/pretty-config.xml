@@ -1,0 +1,104 @@
+<pretty-config xmlns="http://ocpsoft.org/schema/rewrite-config-prettyfaces"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://ocpsoft.org/schema/rewrite-config-prettyfaces
+       http://ocpsoft.org/xml/ns/prettyfaces/rewrite-config-prettyfaces.xsd">
+
+	<url-mapping id="url-seo">
+		<pattern value="/url-padrao-seo.xhtml" />
+		<view-id value="/index.jsp" />
+	</url-mapping>
+
+	<url-mapping id="url-index">
+		<pattern value="/"></pattern>
+		<view-id value="/pages/home.jsf" />
+	</url-mapping>
+
+	<url-mapping id="url-home">
+		<pattern value="/home"></pattern>
+		<view-id value="/pages/home.jsf" />
+	</url-mapping>
+
+
+    <!-- CATEGORIAS -->
+    <url-mapping id="url-categoria">
+		<pattern value="/categoria"></pattern>
+		<view-id value="/pages/listarCategorias.jsf" />
+	</url-mapping>
+    
+	<url-mapping id="url-lista-categorias">
+		<pattern value="/categorias"></pattern>
+		<view-id value="/pages/listarCategorias.jsf" />
+	</url-mapping>
+
+	<url-mapping id="url-new-categoria" parentId="url-categoria">
+		<pattern value="/new"></pattern>
+		<view-id value="/pages/categoria.jsf" />
+		<action onPostback="false">#{categoriaBean.createInstance()}</action>
+	</url-mapping>
+	
+	<url-mapping id="url-exibir-categoria" parentId="url-categoria">
+		<pattern value="/exibir/#{codigo : categoriaBean.codigo}"></pattern>
+		<view-id value="/pages/categoria.jsf" />
+		<action onPostback="false">#{categoriaBean.loadInstance()}</action>
+	</url-mapping>
+	
+	<url-mapping id="url-excluir-categoria" parentId="url-categoria">
+		<pattern value="/excluir/#{codigo : categoriaBean.codigo}"></pattern>
+		<view-id value="/pages/listarCategorias.jsf" />
+		<action onPostback="false">#{categoriaBean.excluirInstance()}</action>
+	</url-mapping>
+	
+	<url-mapping id="url-editar-categoria" parentId="url-categoria">
+		<pattern value="/editar/#{codigo : categoriaBean.codigo}"></pattern>
+		<view-id value="/pages/categoria.jsf" />
+		<action onPostback="false">#{categoriaBean.editInstance()}</action>
+	</url-mapping>
+	
+	
+	<!-- PRODUTOS -->
+	<!-- PRODUTOS ESTÁ USANDO ANOTAÇÃO -->
+	<!-- <url-mapping id="url-produto">
+		<pattern value="/produto"></pattern>
+		<view-id value="/pages/listarProdutos.jsf" />
+	</url-mapping>
+	
+	<url-mapping id="url-lista-produtos">
+		<pattern value="/produtos"></pattern>
+		<view-id value="/pages/listarProdutos.jsf" />
+	</url-mapping>
+
+	<url-mapping id="url-new-produto" parentId="url-produto">
+		<pattern value="/new"></pattern>
+		<view-id value="/pages/produto.jsf" />
+		<action onPostback="false">#{produtoBean.createInstance()}</action>
+	</url-mapping>
+	
+	<url-mapping id="url-exibir-produto" parentId="url-produto">
+		<pattern value="/exibir/#{codigo : produtoBean.codigo}"></pattern>
+		<view-id value="/pages/produto.jsf" />
+		<action onPostback="false">#{produtoBean.loadInstance()}</action>
+	</url-mapping>
+	
+	<url-mapping id="url-excluir-produto" parentId="url-produto">
+		<pattern value="/excluir/#{codigo : produtoBean.codigo}"></pattern>
+		<view-id value="/pages/listarProdutos.jsf" />
+		<action onPostback="false">#{produtoBean.excluirInstance()}</action>
+	</url-mapping>
+	
+	<url-mapping id="url-editar-produto" parentId="url-produto">
+		<pattern value="/editar/#{codigo : produtoBean.codigo}"></pattern>
+		<view-id value="/pages/produto.jsf" />
+		<action onPostback="false">#{produtoBean.editInstance()}</action>
+	</url-mapping>
+	
+	<url-mapping id="url-listar-categoria-produto">
+		<pattern value="/listar/#{nomeCategoria : produtoBean.nomeCategoria}/#{nomeProduto : produtoBean.nomeProduto}"></pattern>
+		<view-id value="/pages/listarProdutos.jsf" />
+	</url-mapping> -->
+	
+	<url-mapping id="url-listar-produtos-categoria">
+		<pattern value="/listar/#{nomeCategoria : produtoBean.nomeCategoria}/"/>
+		<view-id value="/pages/listarProdutos.jsf" />
+	</url-mapping>
+	
+</pretty-config>
