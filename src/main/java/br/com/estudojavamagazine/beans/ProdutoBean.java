@@ -9,6 +9,7 @@ import javax.faces.bean.RequestScoped;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 
+import br.com.estudojavamagazine.dao.lang.DaoException;
 import br.com.estudojavamagazine.domain.Categoria;
 import br.com.estudojavamagazine.domain.Produto;
 import br.com.estudojavamagazine.enumerate.ModoTela;
@@ -66,7 +67,11 @@ public class ProdutoBean extends BaseBean {
 			listarProduto = produtoService
 					.findProdutoByNomeCategoria(nomeCategoria);
 		} else {
-			listarProduto = produtoService.findAllProdutos();
+			try {
+				listarProduto = produtoService.findAllProdutos();
+			} catch (ProdutoException e) {
+				messageErro(e.getMessage());
+			}
 		}
 
 		nomeCategoria = null;
@@ -85,16 +90,22 @@ public class ProdutoBean extends BaseBean {
 	@URLAction(mappingId = "url-exibir-produto")
 	public void loadInstance() {
 		setModoTela(ModoTela.Exibir);
-		if (ObjectUtil.isNotNull(getCodigo())) {
-			this.produto = produtoService.findProduto(Long
-					.parseLong(getCodigo()));
-		} else if (ObjectUtil.isNotNull(this.produto)
-				&& ObjectUtil.isNotNull(this.produto.getCodigo())) {
-			this.produto = produtoService.findProduto(Long
-					.parseLong(getCodigo()));
-		}
-		if (ObjectUtil.isNotNull(this.produto.getCategoria())) {
-			this.codigoCategoria = this.produto.getCategoria().getCodigo();
+		try {
+			if (ObjectUtil.isNotNull(getCodigo())) {
+				this.produto = produtoService.findProduto(Long
+						.parseLong(getCodigo()));
+			} else if (ObjectUtil.isNotNull(this.produto)
+					&& ObjectUtil.isNotNull(this.produto.getCodigo())) {
+				this.produto = produtoService.findProduto(Long
+						.parseLong(getCodigo()));
+			}
+			if (ObjectUtil.isNotNull(this.produto.getCategoria())) {
+				this.codigoCategoria = this.produto.getCategoria().getCodigo();
+			}
+		} catch (NumberFormatException e) {
+			messageErro(e.getMessage());
+		} catch (ProdutoException e) {
+			messageErro(e.getMessage());
 		}
 	}
 
@@ -105,39 +116,49 @@ public class ProdutoBean extends BaseBean {
 	}
 
 	@URLAction(mappingId = "url-excluir-produto")
-	public void excluirInstance() {
+	public String excluirInstance() {
 		if (ObjectUtil.isNotNull(getCodigo())) {
 			try {
 				produtoService.removerProduto(Long.parseLong(getCodigo()));
-				messageInfo("produto removida com sucesso!");
+				messageInfo("produto removido com sucesso!");
 			} catch (NumberFormatException e) {
 				messageErro("Erro ao obter código -- " + this.getCodigo());
 			} catch (ProdutoException e) {
 				messageErro(e.getMessage());
 			}
 		}
+		
 		setModoTela(ModoTela.Excluir);
 		this.codigoCategoria = null;
+		
+		return "pretty:url-lista-produtos";
 	}
 
 	public String persist() {
 		try {
-			produto.setCategoria(categoriaService
-					.findCategoria(codigoCategoria));
+			produto.setCategoria(categoriaService.findCategoria(codigoCategoria));
 			produto = produtoService.saveOrUpdate(produto);
 		} catch (ProdutoException e) {
 			e.printStackTrace();
 			messageErro(e.getMessage());
 			return null;
-		}
+		} catch (DaoException e) {
+		    messageErro(e.getMessage());
+            return null;
+        }
 		setCodigo(produto.getCodigo().toString());
 		setModoTela(ModoTela.Exibir);
-		messageInfo("Produto salva com sucesso!");
+		messageInfo("Produto salvo com sucesso!");
 		return "pretty:url-exibir-produto";
 	}
 
 	public List<Categoria> allCategorias() {
-		return categoriaService.findAllCategorias();
+		try {
+            return categoriaService.findAllCategorias();
+        } catch (DaoException e) {
+            messageErro(e.getMessage());
+            return new ArrayList<Categoria>();
+        }
 	}
 
 	// ==== GETTERS AND SETTERS ====

@@ -1,8 +1,8 @@
 package br.com.estudojavamagazine.domain;
 
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.Set;
-import java.util.TreeSet;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -33,8 +33,8 @@ public class Categoria implements Serializable {
     private String nome;
     @Column(name = "descricao", nullable = true)
     private String descricao;
-    @OneToMany(fetch = FetchType.LAZY)
-    private Set<Produto> produtos = new TreeSet<Produto>();
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "categoria")
+    private Set<Produto> produtos = new HashSet<Produto>();
 
     public Categoria() {
         super();

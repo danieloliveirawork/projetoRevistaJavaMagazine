@@ -3,13 +3,13 @@ package br.com.estudojavamagazine.service.impl;
 import java.io.Serializable;
 import java.util.List;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import br.com.estudojavamagazine.dao.CategoriaDao;
+import br.com.estudojavamagazine.dao.lang.DaoException;
 import br.com.estudojavamagazine.domain.Categoria;
 import br.com.estudojavamagazine.service.CategoriaService;
 import br.com.estudojavamagazine.service.lang.CategoriaException;
@@ -21,50 +21,51 @@ public class CategoriaServiceImpl implements Serializable, CategoriaService {
 
 	private static final long serialVersionUID = 1L;
 	
-	@PersistenceContext
-	private EntityManager entityManager;
+	@Autowired
+	private CategoriaDao categoriaDao;
 	
 	@Override
-	public Categoria saveOrUpdate(Categoria categoria) throws CategoriaException {
-		try {
-			if (ObjectUtil.isNotNull(categoria)) {
-				categoria = entityManager.merge(categoria);
-			} else {
-				entityManager.persist(categoria);
-			}
-		} catch (Exception e) {
-			throw new CategoriaException(e);
+	public Categoria saveOrUpdate(Categoria categoria) throws DaoException {
+		if (ObjectUtil.isNotNull(categoria)) {
+			categoria = categoriaDao.merge(categoria);
+		} else {
+			categoria = categoriaDao.save(categoria);
 		}
 		return categoria;
 	}
 	
 	@Override
-	public Categoria findCategoria(Long codigo) {
+	public Categoria findCategoria(Long codigo) throws DaoException {
 		if (ObjectUtil.isNotNull(codigo)) {
-			return entityManager.find(Categoria.class, codigo);
-		} else {
-			return null;
+             return categoriaDao.searchById(codigo);
 		}
+		return null;
 	}
 
 	@Override
-	public List<Categoria> findAllCategorias() {
-		return entityManager.createNamedQuery(Categoria.FIND_ALL_CATEGORIAS, Categoria.class).getResultList();
+	public List<Categoria> findAllCategorias() throws DaoException {
+		return categoriaDao.createNamedQuery(Categoria.FIND_ALL_CATEGORIAS);
 	}
 
 	@Override
-	public void removerCategoria(Categoria categoria) throws CategoriaException {
+	public void removerCategoria(Categoria categoria) throws DaoException, CategoriaException {
 		if (ObjectUtil.isNotNull(categoria) && ObjectUtil.isNotNull(categoria.getCodigo())) {
 			removerCategoria(categoria.getCodigo());
 		}
 	}
 	
 	@Override
-	public void removerCategoria(Long codigo) throws CategoriaException {
+	public void removerCategoria(Long codigo) throws DaoException, CategoriaException {
 		if (ObjectUtil.isNotNull(codigo)) {
-			Categoria categoria = entityManager.find(Categoria.class, codigo);
-			if (ObjectUtil.isNotNull(categoria)) {
-				entityManager.remove(categoria);
+			Categoria categoria = categoriaDao.searchById(codigo);
+			if (ObjectUtil.isNotNullAndNotEmpty(categoria.getProdutos())) {
+			    throw new CategoriaException("Existem produtos cadastrados para a categoria: " + categoria.getNome());
+			} else if (ObjectUtil.isNotNull(categoria)) {
+				try {
+                    categoriaDao.delete(categoria);
+                } catch (DaoException e) {
+                    throw new CategoriaException(e);
+                }
 			} else {
 				throw new CategoriaException("Categoria não existe ou já foi removida!");
 			}
@@ -73,14 +74,7 @@ public class CategoriaServiceImpl implements Serializable, CategoriaService {
 
 	@Override
 	public Categoria findByName(String nome) {
-		List<Categoria> list = entityManager.createNamedQuery(Categoria.FIND_CATEGORIA_BY_NAME, Categoria.class)
-				.setParameter("nome", nome)
-				.getResultList();
-		if (ObjectUtil.isNotNullAndNotEmpty(list)) {
-			return list.get(0);
-		} else {
-			return null;
-		}
+		return categoriaDao.findByName(nome);
 	}
 	
 }

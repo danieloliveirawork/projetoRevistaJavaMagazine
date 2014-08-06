@@ -3,14 +3,13 @@ package br.com.estudojavamagazine.service.impl;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
-
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import br.com.estudojavamagazine.dao.ProdutoDao;
+import br.com.estudojavamagazine.dao.lang.DaoException;
 import br.com.estudojavamagazine.domain.Produto;
 import br.com.estudojavamagazine.service.ProdutoService;
 import br.com.estudojavamagazine.service.lang.ProdutoException;
@@ -22,16 +21,16 @@ public class ProdutoServiceimpl implements ProdutoService {
 
 	private static final long serialVersionUID = 3095786918632665898L;
 	
-	@PersistenceContext
-	private EntityManager entityManager;
-
+	@Autowired
+	private ProdutoDao produtoDao;
+	
 	@Override
 	public Produto saveOrUpdate(Produto produto) throws ProdutoException {
 		try {
 			if (ObjectUtil.isNotNull(produto.getCodigo())) {
-				produto = entityManager.merge(produto);
+				produto = produtoDao.update(produto);
 			} else {
-				entityManager.persist(produto);
+				produto = produtoDao.save(produto);
 			}
 		} catch (Exception e) {
 			throw new ProdutoException(e);
@@ -40,17 +39,25 @@ public class ProdutoServiceimpl implements ProdutoService {
 	}
 
 	@Override
-	public Produto findProduto(Long codigo) {
+	public Produto findProduto(Long codigo) throws ProdutoException {
 		if (ObjectUtil.isNotNull(codigo)) {
-			return entityManager.find(Produto.class, codigo);
+			try {
+				return produtoDao.searchById(codigo);
+			} catch (DaoException e) {
+				throw new ProdutoException(e);
+			}
 		} else {
 			return null;
 		}
 	}
 
 	@Override
-	public List<Produto> findAllProdutos() {
-		return entityManager.createNamedQuery(Produto.FIND_ALL_PRODUTO, Produto.class).getResultList();
+	public List<Produto> findAllProdutos() throws ProdutoException {
+		try {
+			return produtoDao.createNamedQuery(Produto.FIND_ALL_PRODUTO);
+		} catch (DaoException e) {
+			throw new ProdutoException(e);
+		}
 	}
 
 	@Override
@@ -63,34 +70,31 @@ public class ProdutoServiceimpl implements ProdutoService {
 	@Override
 	public void removerProduto(Long codigo) throws ProdutoException {
 		if (ObjectUtil.isNotNull(codigo)) {
-			Produto produto = entityManager.find(Produto.class, codigo);
-			if (ObjectUtil.isNotNull(produto)) {
-				entityManager.remove(produto);
-			} else {
-				throw new ProdutoException("Produto não existe ou já foi removida!");
+			try {
+				Produto produto = produtoDao.searchById(codigo);
+				if (ObjectUtil.isNotNull(produto)) {
+					produtoDao.delete(produto);
+				} else {
+					throw new ProdutoException("Produto não existe ou já foi removida!");
+				}
+			} catch (DaoException e) {
+				throw new ProdutoException(e);
 			}
 		}
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public List<Produto> findProdutoByNomeCategoriaAndNomeProduto(String nomeCategoria, String nomeProduto) {
 		if (ObjectUtil.isNotNull(nomeCategoria) && ObjectUtil.isNotNull(nomeProduto)) {
-			Query query = entityManager.createNamedQuery(Produto.FIND_PRODUTO_BY_CATEGORIA_PRODUTO, Produto.class)
-					.setParameter("nomeCat", nomeCategoria)
-					.setParameter("nomeProd", nomeProduto);
-			return query.getResultList();
+			return produtoDao.findProdutoByNomeCategoriaAndNomeProduto(nomeCategoria, nomeProduto);
 		}
 		return new ArrayList<Produto>();
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public List<Produto> findProdutoByNomeCategoria(String nomeCategoria) {
 		if (ObjectUtil.isNotNull(nomeCategoria)) {
-			Query query = entityManager.createNamedQuery(Produto.FIND_PRODUTO_BY_CATEGORIA, Produto.class)
-					.setParameter("nomeCat", nomeCategoria);
-			return query.getResultList();
+			return produtoDao.findProdutoByNomeCategoria(nomeCategoria);
 		}
 		return new ArrayList<Produto>();
 	}

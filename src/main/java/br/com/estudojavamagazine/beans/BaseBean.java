@@ -22,6 +22,12 @@ public abstract class BaseBean implements Serializable {
     }
     
     public void message(String msg, Severity severity) {
+        if (FacesContext.getCurrentInstance().getMessages().hasNext()) {
+            FacesContext.getCurrentInstance().getMessages().remove();
+        }
+        if (!FacesContext.getCurrentInstance().getMessageList().isEmpty()) {
+            FacesContext.getCurrentInstance().getMessageList().clear();
+        }
     	FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(severity, msg, null));
     }
     

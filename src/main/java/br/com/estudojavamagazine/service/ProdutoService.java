@@ -10,9 +10,9 @@ public interface ProdutoService extends Serializable {
 
 	public abstract Produto saveOrUpdate(Produto produto) throws ProdutoException;
 
-	public abstract Produto findProduto(Long codigo);
+	public abstract Produto findProduto(Long codigo) throws ProdutoException;
 
-	public abstract List<Produto> findAllProdutos();
+	public abstract List<Produto> findAllProdutos() throws ProdutoException;
 
 	public abstract void removerProduto(Long codigo) throws ProdutoException;
 
